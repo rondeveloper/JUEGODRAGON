@@ -1,0 +1,544 @@
+<html>
+<head>
+	<title>NEW</title>
+
+	<style type="text/css">
+		.personaje{
+			width: 60px;
+			height: 80px;
+			position: absolute;
+			bottom: 0px;
+			left: 0px;
+		}
+		.personaje-invertido{
+			width: 60px;
+			height: 80px;
+			position: absolute;
+			transform: scaleX(-1);
+	        filter: FlipH;
+	        -ms-filter: "FlipH";
+		}
+		.fondo{
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+		}
+		.dragon{
+			width: 750px;
+			height: 400px;
+			position: absolute;
+			bottom: 120px;
+			left: 700px;
+		}
+		.dragon-invertido{
+			width: 750px;
+			height: 400px;
+			position: absolute;
+	        transform: scaleX(-1);
+	        filter: FlipH;
+	        -ms-filter: "FlipH";
+		}
+		#temporizador{
+			position: absolute;
+			left: 10px;
+			top: 10px;
+			width: auto;
+			padding: 0px 15px;
+			height: 50px;
+			background: orange;
+			color: red;
+			text-align: center;
+			font-weight: bold;
+			font-size: 35pt;
+			font-family: arial;
+			border-radius: 15px;
+			border: 5px solid red;
+		}
+		.coffemina{
+			opacity: .1;
+			width: 20px;
+			height: 20px;
+			position: absolute;
+			bottom: 0px;
+			left: 400px;
+			transition: 3s;
+		}
+		.coffemina-on{
+			opacity: 1;
+			width: 50px;
+			height: 50px;
+			position: absolute;
+			bottom: 0px;
+			left: 400px;
+			transition: 4s;
+		}
+		body{
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body id="identificadorBODY">
+
+	<audio id="mireproductor" src="audio/fondo.mp3" autoplay=""></audio>
+
+	<img src="imagenes/fondo-1.jpg" class="fondo" id="fondo"/>	
+
+	<img src="imagenes/img-2.gif" class="personaje" id="idRathson"/>
+
+	<img src="imagenes/dragon.gif" class="dragon DR-invertido" id="idRhaegar"/>
+
+	<div id="temporizador">CAFE en Llamas</div>
+
+	<div id="idCONTAINERcoffemina"></div>
+
+
+
+
+	<script type="text/javascript">
+
+		window.onload = function() {
+
+			var salto = null;
+			var enSalto = 0;
+			var avance = null;
+			var enAvance = 0;
+			var retroceso = null;
+			var enRetroceso = 0;
+
+			var DRvueloAlto = null;
+			var DRenVueloAlto = 0;
+			var DRvueloBajo = null;
+			var DRenVueloBajo = 0;
+			var DRvueloDerecha = null;
+			var DRenVueloDerecha = 0;
+			var DRvueloIzquierda = null;
+			var DRenVueloIzquierda = 0;
+
+			var gameTempo = null;
+			var segundosTempo = 45;
+			var swDRinvertido = false;
+			var fireTempo = setInterval(countFireTempo, 100);
+			var cntFireTempo = 43;
+			var sw_onFire = false;
+			var swRathsonOnLife = true;
+			var swRhaegarOnLife = true;
+
+			var positionAbajo = 0;
+	 		var positionIzquierda = 200;
+
+	 		var DRpositionAbajo = 120;
+	 		var DRpositionIzquierda = 700;
+
+			var ElementoBody = document.getElementById("identificadorBODY");
+			var Rathson = document.getElementById("idRathson");
+			var Rhaegar = document.getElementById("idRhaegar");
+			var CONTAINERcoffemina = document.getElementById("idCONTAINERcoffemina");
+			var cntCoffeeMinasPlantadas = 0;
+
+			var lluviaDeFuego = null;
+
+			Rathson.style.bottom = positionAbajo+"px";
+			Rathson.style.left = positionIzquierda+"px";
+
+			Rhaegar.style.bottom = DRpositionAbajo+"px";
+			Rhaegar.style.left = DRpositionIzquierda+"px";
+
+
+			ElementoBody.addEventListener("keyup", function(event) {
+
+				/* MOVIMIENTO RATHSON */
+				if (event.keyCode === 87) {
+					//ARRIBA
+					if(enSalto==0){
+						salto = setInterval(saltar, 7);
+					}
+				}
+				if (event.keyCode === 83) {
+					//ABAJO
+					if(swRathsonOnLife){
+						positionAbajo = 0;
+						Rathson.style.bottom = positionAbajo+"px";
+					}
+				}
+				if (event.keyCode === 68) {
+					//ADELANTE
+					if(enRetroceso==1){
+						enRetroceso = 0;
+						stopRetroceder();
+					} else if(enAvance==0){
+						avance = setInterval(avanzar, 10);
+						Rathson.className = "personaje";
+					}
+				}
+				if (event.keyCode === 65) {
+					//ATRAS
+					if(enAvance==1){
+						enAvance = 0;
+						stopAvanzar();
+					} else if(enRetroceso==0){
+						retroceso = setInterval(retroceder, 10);
+						Rathson.className = "personaje-invertido";
+					} 
+				}
+				if (event.keyCode === 32) {
+					//PLANTA COFFEMINA
+					plantarCoffeMina();
+				}
+			
+
+
+				/* MUSICA */
+				if(event.keyCode === 77){
+					document.getElementById('mireproductor').play();
+					//gameTempo = setInterval(playTempo, 1000);
+				}
+
+
+				/* MOVIMIENTO DRAGON */
+				if (event.keyCode === 38) {
+					//alert("ARRIBA PRESIONADO");
+					if(DRenVueloAlto==0){
+						DRvueloAlto = setInterval(DRvolarAlto, 14);
+					}
+				}
+				if (event.keyCode === 40) {
+					//alert("ABAJO PRESIONADO");
+					if(DRenVueloBajo==0){
+						DRvueloBajo = setInterval(DRvolarBajo, 20);
+					}
+				}
+				if (event.keyCode === 39) {
+					//alert("DERECHA PRESIONADO");
+					if(DRenVueloDerecha==0){
+						DRvueloDerecha = setInterval(DRvolarDerecha, 14);
+					}
+				}
+				if (event.keyCode === 37) {
+					//alert("IZQUIERDA PRESIONADO");
+					if(DRenVueloIzquierda==0){
+						DRvueloIzquierda = setInterval(DRvolarIzquierda, 14);
+					}
+				}
+/*
+				if (event.keyCode === 96) {
+					if(swDRinvertido){
+						Rhaegar.className = "dragon";
+					}else{
+						Rhaegar.className = "dragon-invertido";
+					}
+					swDRinvertido = !swDRinvertido;
+				}
+				*/
+				if (event.keyCode === 96) {
+					DRstopVolarAlto();
+					DRenVueloAlto = 0;
+					DRstopVolarBajo();
+					DRenVueloBajo = 0;
+					DRstopVolarDerecha();
+					DRenVueloDerecha = 0;
+					DRstopVolarIzquierda();
+					DRenVueloIzquierda = 0;
+				}
+
+				if (event.keyCode === 13) {
+					alert(positionAbajo+"|"+positionIzquierda);
+					alert(DRpositionAbajo+"|"+DRpositionIzquierda);
+				}
+
+			});
+
+			function saltar() {
+				if(enSalto==0){
+					enSalto = 1;
+				} else if(enSalto==1){
+					positionAbajo = positionAbajo + 11;
+					Rathson.style.bottom = positionAbajo+"px";
+					if(positionAbajo> 370){
+						enSalto = 2;
+					}
+				} else if(enSalto==2){
+					positionAbajo = positionAbajo - 6;
+					if(positionAbajo<120){
+						positionAbajo = 120;
+						enSalto = 3;
+					}
+					Rathson.style.bottom = positionAbajo+"px";
+				} else if(enSalto==3){
+					enSalto = 0;
+					stopSaltar();
+				}
+			}
+			function stopSaltar() {
+			  clearInterval(salto);
+			}
+
+			function avanzar() {
+				if(enRetroceso!=0){
+					enRetroceso = 0;
+					stopRetroceder();
+				}
+				if(enAvance==0){
+					enAvance = 1;
+				} else if(enAvance==1){
+					positionIzquierda = positionIzquierda + 10;
+					Rathson.style.left = positionIzquierda+"px";
+					if(positionIzquierda>=1450){
+						enAvance = 2;
+					}
+				} else if(enAvance==2){
+					enAvance = 0;
+					stopAvanzar();
+				}
+			}
+			function stopAvanzar() {
+			  clearInterval(avance);
+			}
+
+			function retroceder() {
+
+				if(enAvance!=0){
+					enAvance = 0;
+					stopAvanzar();
+				}
+
+				if(enRetroceso==0){
+					enRetroceso = 1;
+				} else if(enRetroceso==1){
+					positionIzquierda = positionIzquierda - 10;
+					Rathson.style.left = positionIzquierda+"px";
+					if(positionIzquierda<100){
+						enRetroceso = 2;
+					}
+				} else if(enRetroceso==2){
+					enRetroceso = 0;
+					stopRetroceder();
+				}
+			}
+			function stopRetroceder() {
+			  clearInterval(retroceso);
+			}
+
+
+
+			/* FUNCIONES DRAGON */
+			function DRvolarAlto() {
+				if(DRenVueloBajo!=0){
+					DRenVueloBajo = 0;
+					DRstopVolarBajo();
+				}
+				if(DRenVueloAlto==0){
+					DRenVueloAlto = 1;
+				} else if(DRenVueloAlto==1){
+					DRpositionAbajo = DRpositionAbajo + 8;
+					Rhaegar.style.bottom = DRpositionAbajo+"px";
+					if(DRpositionAbajo>=550){
+						DRenVueloAlto = 2;
+					}
+				} else if(DRenVueloAlto==2){
+					DRenVueloAlto = 0;
+					DRstopVolarAlto();
+				}
+			}
+			function DRstopVolarAlto() {
+			  clearInterval(DRvueloAlto);
+			}
+			function DRvolarBajo() {
+				if(DRenVueloAlto!=0){
+					DRenVueloAlto = 0;
+					DRstopVolarAlto();
+				}
+				if(DRenVueloBajo==0){
+					DRenVueloBajo = 1;
+				} else if(DRenVueloBajo==1){
+					DRpositionAbajo = DRpositionAbajo - 8;
+					Rhaegar.style.bottom = DRpositionAbajo+"px";
+					if(DRpositionAbajo<20){
+						DRenVueloBajo = 2;
+					}
+				} else if(DRenVueloBajo==2){
+					DRenVueloBajo = 0;
+					DRstopVolarBajo();
+				}
+			}
+			function DRstopVolarBajo() {
+			  clearInterval(DRvueloBajo);
+			}
+
+
+			function DRvolarDerecha() {
+				if(DRenVueloIzquierda!=0){
+					DRenVueloIzquierda = 0;
+					DRstopVolarIzquierda();
+				}
+				if((DRpositionIzquierda+300)<positionIzquierda){
+					Rhaegar.className = "dragon-invertido";
+					swDRinvertido = true;
+				}else{
+					Rhaegar.className = "dragon";
+					swDRinvertido = false;
+				}
+				if(DRenVueloDerecha==0){
+					DRenVueloDerecha = 1;
+				} else if(DRenVueloDerecha==1){
+					DRpositionIzquierda = DRpositionIzquierda + 17;
+					Rhaegar.style.left = DRpositionIzquierda+"px";
+					//console.log(DRpositionIzquierda);
+					if(DRpositionIzquierda>=1070){
+						DRenVueloDerecha = 2;
+					}
+				} else if(DRenVueloDerecha==2){
+					DRenVueloDerecha = 0;
+					DRstopVolarDerecha();
+				}
+			}
+			function DRstopVolarDerecha() {
+			  clearInterval(DRvueloDerecha);
+			}
+
+			function DRvolarIzquierda() {
+				if(DRenVueloDerecha!=0){
+					DRenVueloDerecha = 0;
+					DRstopVolarDerecha();
+				}
+				if((DRpositionIzquierda+300)>positionIzquierda){
+					Rhaegar.className = "dragon";
+					swDRinvertido = false;
+				}else{
+					Rhaegar.className = "dragon-invertido";
+					swDRinvertido = true;
+				}
+				if(DRenVueloIzquierda==0){
+					DRenVueloIzquierda = 1;
+				} else if(DRenVueloIzquierda==1){
+					DRpositionIzquierda = DRpositionIzquierda - 8;
+					Rhaegar.style.left = DRpositionIzquierda+"px";
+					if(DRpositionIzquierda<-100){
+						DRenVueloIzquierda = 2;
+					}
+				} else if(DRenVueloIzquierda==2){
+					DRenVueloIzquierda = 0;
+					DRstopVolarIzquierda();
+				}
+			}
+			function DRstopVolarIzquierda() {
+			  clearInterval(DRvueloIzquierda);
+			}
+
+
+			function playTempo() {
+				stopPlayTempo();
+				/*
+				if(segundosTempo>0){
+					segundosTempo = segundosTempo-1;
+					document.getElementById("temporizador").innerHTML = segundosTempo;
+				} else {
+					stopPlayTempo();
+					alert("JUEGO TERMINADO - VENCEDOR: RATHSON");
+					segundosTempo = 15;
+				}
+				*/
+			}
+			function stopPlayTempo() {
+			  clearInterval(gameTempo);
+			  clearInterval(fireTempo);
+			}
+			function countFireTempo(){
+				cntFireTempo++;
+				if(cntFireTempo%69==0){
+					//document.getElementById("temporizador").innerHTML = "FIRE";
+					sw_onFire = true;
+				} else if(cntFireTempo%70==0){
+					//document.getElementById("temporizador").innerHTML = ".";
+					sw_onFire = false;
+				}
+
+				/* si esta en rango de dano */
+				if(!swDRinvertido){
+					if( ( ( (positionIzquierda+20) > DRpositionIzquierda) && (positionIzquierda<(DRpositionIzquierda+250)) ) &&  ( ( (positionAbajo) > (DRpositionAbajo-85) ) && (positionAbajo<(DRpositionAbajo+170)) ) && sw_onFire){
+						rathsonEnLlamas();
+					}
+				}else{
+					if( ( ( positionIzquierda > (DRpositionIzquierda+450) ) && (positionIzquierda<(DRpositionIzquierda+650)) ) &&  ( ( (positionAbajo) > (DRpositionAbajo-85) ) && (positionAbajo<(DRpositionAbajo+170)) && sw_onFire) ){
+						rathsonEnLlamas();
+					}
+				}
+			}
+
+			function rathsonEnLlamas(){
+				if(swRhaegarOnLife){
+					swRathsonOnLife = false;
+					Rathson.src = "imagenes/fire-burn.gif";
+					Rathson.style.width = "140px";
+					Rathson.style.height = "170px";
+					stopSaltar();
+					enSalto = 2;
+					stopAvanzar();
+					enAvance = 2;
+					stopRetroceder();
+					enRetroceso = 2;
+					document.getElementById("temporizador").innerHTML = "RHAEGAR GANA !!!";
+				}
+			}
+			function plantarCoffeMina() {
+				if(cntCoffeeMinasPlantadas<3){ 
+					cntCoffeeMinasPlantadas++;
+					var newImg = document.createElement("img"); 
+				  	var posExpX = positionIzquierda;
+				  	var posExpY = positionAbajo;
+					newImg.className = "coffemina";
+					newImg.src = "imagenes/coffeeMina.png";
+					newImg.style.left = posExpX+"px";
+					newImg.style.bottom = posExpY+"px";
+					CONTAINERcoffemina.appendChild(newImg);
+					setTimeout(function(){ newImg.className = "coffemina-on"; }, 200);
+					setTimeout(function(){ explotaCoffeMina(posExpX,posExpY,newImg); }, 5000);
+				}
+			}
+			function explotaCoffeMina(posExpX,posExpY,newImg){
+				cntCoffeeMinasPlantadas--;
+				newImg.style.transition = "0s";
+				newImg.style.width = "80px";
+				newImg.style.height = "80px";
+				newImg.src = "imagenes/cmExplosion.gif";
+				setTimeout(function(){ quitaCoffeMina(newImg); }, 700);
+				//document.getElementById("temporizador").innerHTML = "...";
+				if(!swDRinvertido){
+					if(posExpX>=(DRpositionIzquierda+320) && posExpX<=(DRpositionIzquierda+600) && posExpY>=(DRpositionAbajo-20) && posExpY<=(DRpositionAbajo+230)){
+						rhegarEnLlamas()
+					}
+				}else{
+					if((posExpX-20)>=(DRpositionIzquierda+30) && posExpX<=(DRpositionIzquierda+400) && posExpY>=(DRpositionAbajo-20) && posExpY<=(DRpositionAbajo+230)){
+						rhegarEnLlamas()
+					}
+				}
+				
+			}
+			function quitaCoffeMina(newImg){
+				newImg.remove();
+			}
+			function rhegarEnLlamas(){
+				//Rhaegar.style.display="none";
+				swRhaegarOnLife = false;
+				Rhaegar.src = "imagenes/fire-burn.gif";
+				Rhaegar.style.width = "340px";
+				Rhaegar.style.height = "570px";
+				DRstopVolarAlto();
+				DRenVueloAlto = 2;
+				DRstopVolarBajo();
+				DRenVueloBajo = 2;
+				DRstopVolarDerecha();
+				DRenVueloDerecha = 2;
+				DRstopVolarIzquierda();
+				DRenVueloIzquierda = 2;
+				document.getElementById("temporizador").innerHTML = "RATHSON GANA !!!";
+				if(!swRathsonOnLife){
+					document.getElementById("temporizador").innerHTML = "END OF THE GAME";
+				}
+			}
+
+		}
+	</script>
+</body>
+</html>
